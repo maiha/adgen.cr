@@ -1,0 +1,10 @@
+version: '2'
+
+services:
+  crystal:
+    image: crystallang/crystal:0.31.1
+    command: shards build --link-flags "-static"
+    user: "${UID}:${GID}"
+    volumes:
+      - .:/v
+    working_dir: /v
