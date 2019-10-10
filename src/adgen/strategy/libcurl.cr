@@ -13,8 +13,18 @@ module Adgen::Strategy
       easy.connect_timeout = connect_timeout.seconds
       easy.timeout         = read_timeout.seconds
       
-      requested_at = Time.now
-      res = easy.get
+      requested_at = Pretty::Time.now
+
+      case req.method
+      when .get?
+        res = easy.get
+      when .post?
+        easy.headers["Content-Type"] = "application/json"
+        easy.headers["Accept"]       = "application/json"
+        res = easy.post(json: req.api.data)
+      else
+        raise NotImplementedError.new("#{self.class} doesn't support #{req.method.inspect}")
+      end
 
       logger.debug "HTTP response (status %s)" % res.code
       logger.debug "HTTP response header\n%s" % res.header

@@ -6,7 +6,7 @@ module Adgen::Api
       @method = Method::GET
     end
 
-    def request_path
+    def request_path : String
       path
     end
     

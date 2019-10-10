@@ -1,0 +1,11 @@
+syntax = "proto2";
+
+message NativePureAd {
+  optional int64  publisher_id        = 1 ; // 0
+  optional int64  adsvr_schedule_id   = 2 ; // 0
+  optional string adsvr_schedule_name = 3 ; // "string"
+}
+
+message NativePureAdArray {
+  repeated NativePureAd array = 1;
+}

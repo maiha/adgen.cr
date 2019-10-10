@@ -1,6 +1,6 @@
 class Adgen::Host
   def self.default
-    new("https://graph.adgen.com")
+    new("https://ad-generation.jp")
   end
 
   var uri : URI

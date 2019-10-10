@@ -3,7 +3,7 @@ module Adgen::Api
   abstract def apply_access_token!(token : String)
   abstract def validate!
 
-  class Error < Exception
+    class Error < Exception
     var response : Response
 
     def initialize(@response : Response)
@@ -31,10 +31,11 @@ module Adgen::Api
 
   protected def build_request_path
     return path if data.empty?
+    return path if method.post?
 
     params = Array(String).new
     data.each do |key, value|
-      params << "%s=%s" % [URI.escape(key), URI.escape(value)]
+      params << "%s=%s" % [URI.encode(key), URI.encode(value)]
     end
     delimiter = path.includes?("?") ? "&" : "?"
     path + delimiter + params.join("&")

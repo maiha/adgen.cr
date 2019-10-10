@@ -1,9 +1,9 @@
 module Adgen::Api
-  class Get
+  class Post
     include Api
 
     def initialize(@path : String, @data : Hash(String, String)? = nil, @form : Hash(String, String)? = nil)
-      @method = Method::GET
+      @method = Method::POST
     end
 
     def request_path : String

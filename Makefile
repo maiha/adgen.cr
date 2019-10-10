@@ -16,7 +16,7 @@ all: adgen-dev
 
 .PHONY: adgen-dev
 adgen-dev:
-	$(BUILD) -o $@
+	$(BUILD) -o $@ --warnings none
 
 .PHONY: adgen
 adgen:
@@ -42,10 +42,10 @@ gen-proto: .adgen-ruby-business-sdk
 
 .PHONY: proto
 proto:
-	@mkdir -p src/cli/proto
-	protoc -I proto --crystal_out src/cli/proto proto/*.proto
-	@mkdir -p src/cli/proto/adgen
-	PROTOBUF_NS=Adgen::Proto protoc -I proto -I proto/adgen --crystal_out src/cli/proto/adgen proto/adgen/*.proto
+	@mkdir -p src/proto
+	protoc -I proto --crystal_out src/proto proto/*.proto
+	@mkdir -p src/adgen/proto
+	PROTOBUF_NS=Adgen::Proto protoc -I proto -I proto/adgen --crystal_out src/adgen/proto proto/adgen/*.proto
 
 .PHONY : test
 test: check_version_mismatch spec progs

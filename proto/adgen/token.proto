@@ -1,0 +1,13 @@
+syntax = "proto2";
+
+import "Datetime.proto";
+
+message Token {
+  optional string email          = 1 ; // "user.name@example.com"
+  optional string token          = 2 ; // "9b2ec46..."
+  optional string expired_at_str = 3 ; // "2019/10/10 20:19:11"
+}
+
+message TokenArray {
+  repeated Token array = 1;
+}

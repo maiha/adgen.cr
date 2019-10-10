@@ -7,4 +7,5 @@ require "var"
 require "pretty"
 require "curl"
 
+require "./proto/**"
 require "./adgen/client"

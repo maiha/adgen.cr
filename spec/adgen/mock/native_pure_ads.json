@@ -1,0 +1,23 @@
+{
+  "publisher_id": 0,
+  "adsvr_schedule_id": 0,
+  "adsvr_schedule_name": "string",
+  "pure_ad_budget": {
+    "budget_type": "string",
+    "lifetime_budget_impression": 0,
+    "monthly_budget_impression": 0,
+    "daily_budget_impression": 0,
+    "lifetime_budget_click": 0,
+    "monthly_budget_click": 0,
+    "daily_budget_click": 0
+  },
+  "pure_ad_creatives": {
+    "adsvr_creative_id": 0,
+    "adsvr_creative_name": "string",
+    "main_image": "string",
+    "icon_image": "string",
+    "native_title": "string",
+    "native_sponsored": "string",
+    "native_ctatext": "string"
+  }
+}

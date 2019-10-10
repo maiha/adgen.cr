@@ -1,3 +1,6 @@
+require "./proto/**"
+require "./errors"
+require "./data/**"
 require "./callback"
 require "./strategy"
 require "./request"
@@ -12,15 +15,15 @@ module Adgen
     var auth : Auth = Adgen::Auth::AccessToken.new("")
     var host : Host = Host.default
 
-    var logger : Logger = Logger.new(nil)
+    var logger : Logger
 
-    def initialize(api = nil, auth = nil, host = nil, @logger : Logger? = nil)
+    def initialize(api = nil, auth = nil, host = nil, logger : Logger? = nil)
       self.api  = api
       self.auth = auth
       self.host = host
 
+      @logger = logger || Logger.new(nil)
       self.strategy = Strategy::Libcurl.new
-      self.logger = logger      # set loggers on related objects
     end
 
     ######################################################################
@@ -63,11 +66,6 @@ module Adgen
       end
     end
 
-    def logger=(v : Logger)
-      @logger = v
-      strategy.logger = v
-    end
-    
     ######################################################################
     ### API methods
 
@@ -82,9 +80,9 @@ module Adgen
       execute(api: api)
     end
 
-    def post(path : String, form = {} of String => String) : Response
+    def post(path : String, data = {} of String => String) : Response
       api = Api::Post.parse(path)
-      api.form.merge!(params)
+      api.data.merge!(data)
       execute(api: api)
     end
 
