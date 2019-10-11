@@ -41,11 +41,21 @@ gen-proto: .adgen-ruby-business-sdk
 	@crystal gen/proto-adgen.cr
 
 .PHONY: proto
-proto:
+proto: proto_each
+
+.PHONY: proto_at_once
+proto_at_once:
 	@mkdir -p src/proto
 	protoc -I proto --crystal_out src/proto proto/*.proto
 	@mkdir -p src/adgen/proto
 	PROTOBUF_NS=Adgen::Proto protoc -I proto -I proto/adgen --crystal_out src/adgen/proto proto/adgen/*.proto
+
+.PHONY: proto_each
+proto_each:
+	@mkdir -p src/cli/proto/adgen
+	@for x in proto/adgen/*.proto; do \
+	  PROTOBUF_NS=Adgen::Proto protoc -I proto -I proto/adgen --crystal_out src/adgen/proto $$x; \
+	done
 
 .PHONY : test
 test: check_version_mismatch spec progs

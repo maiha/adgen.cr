@@ -1,7 +1,5 @@
 syntax = "proto2";
 
-import "Datetime.proto";
-
 message Token {
   optional string email          = 1 ; // "user.name@example.com"
   optional string token          = 2 ; // "9b2ec46..."

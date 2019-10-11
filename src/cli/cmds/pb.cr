@@ -6,8 +6,6 @@
 # [00:00:32] crystal -D with_pb
 # [00:35:15] crystal -D with_pb --release
 
-{% if flag?(:with_pb) %}
-
 Cmds.command "pb" do
   include Enumerable(Protobuf::Message)
 
@@ -415,5 +413,3 @@ Cmds.command "pb" do
     end
   end
 end
-
-{% end %}

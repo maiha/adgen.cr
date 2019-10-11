@@ -8,9 +8,11 @@ module Adgen
       include Protobuf::Message
       
       contract_of "proto2" do
-        optional :publisher_id, :int64, 1
+        required :publisher_id, :int64, 1
         optional :adsvr_schedule_id, :int64, 2
         optional :adsvr_schedule_name, :string, 3
+        optional :pure_ad_budget, NativePureAdBudget, 4
+        repeated :pure_ad_creatives, NativePureAdCreative, 5
       end
     end
     

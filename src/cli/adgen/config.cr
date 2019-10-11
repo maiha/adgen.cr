@@ -24,17 +24,12 @@ class Adgen::Config < TOML::Config
 
   # batch
   str  "batch/work_dir"
-  str  "batch/cache_dir"
+  str  "batch/global_dir"
   str  "batch/status_log"
-  int  "batch/meta_limit"
+  int  "batch/max_attempts"
+  bool "batch/skip_400"
   bool "batch/gc"
   bool "batch/pb_logging"
-  bool "batch/skip_400"
-  bool "batch/reduce_data"
-  int  "batch/reduce_data_min"
-  int  "batch/rate_limit_max"
-  bool "batch/pretty_rate_limit"
-  int  "batch/max_attempts"
 
   # clickhouse
   str "clickhouse/host"
@@ -58,6 +53,10 @@ class Adgen::Config < TOML::Config
 
     client.dryrun! if dryrun?
     client
+  end
+
+  def batch_publisher_ids : Array(Int32)
+    ints("batch/publisher_ids")
   end
 
   private def build_enabled_recvs
@@ -160,8 +159,9 @@ connect_timeout = 5.0
 read_timeout    = 300.0
 
 [batch]
+publisher_ids   = [3]
 work_dir        = "recv"
-cache_dir       = "cache"
+global_dir      = "global"
 status_log      = "log"
 gc              = true
 pb_logging      = false
@@ -191,5 +191,5 @@ level    = ">=WARN"
 colorize = true
 
 [native_pure_ad]
-cmd = "/api/v2/marketech/native_pure_ads -d publisher_id={PUBLISHER_ID} -d token={TOKEN}"
+cmd = "/api/v2/marketech/native_pure_ads -d publisher_id={PUBLISHER_ID}"
 EOF

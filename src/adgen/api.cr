@@ -3,7 +3,7 @@ module Adgen::Api
   abstract def apply_access_token!(token : String)
   abstract def validate!
 
-    class Error < Exception
+  class Error < Exception
     var response : Response
 
     def initialize(@response : Response)

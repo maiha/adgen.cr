@@ -1,0 +1,15 @@
+syntax = "proto2";
+
+message NativePureAdBudget {
+  optional string budget_type                = 1 ; // "click"
+  optional int64  lifetime_budget_impression = 2 ; // 1
+  optional int64  monthly_budget_impression  = 3 ; // 1
+  optional int64  daily_budget_impression    = 4 ; // 1
+  optional int64  lifetime_budget_click      = 5 ; // 11
+  optional int64  monthly_budget_click       = 6 ; // 11
+  optional int64  daily_budget_click         = 7 ; // 111
+}
+
+message NativePureAdBudgetArray {
+  repeated NativePureAdBudget array = 1;
+}

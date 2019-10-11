@@ -17,6 +17,6 @@ end
 class Adgen::NotAuthorized < Adgen::TokenError
 end
 
-class Adgen::TokenExpired < Adgen::TokenError
+class Adgen::TokenExpired < Adgen::NotAuthorized
 end
 

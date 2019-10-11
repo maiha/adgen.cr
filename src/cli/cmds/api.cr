@@ -1,8 +1,6 @@
 Cmds.command "api" do
   include ::Cli::Helpers::Token
 
-  var client = config.adgen_client
-
   delegate verbose?, to: config
 
   def before
@@ -11,7 +9,7 @@ Cmds.command "api" do
   
   usage "token # show current token"
   task "token" do
-    puts active_token
+    puts current_token
   end
 
   usage "authorize # get new token"
@@ -33,18 +31,6 @@ Cmds.command "api" do
     client = authorized_client
     res = client.get(arg1)
     show(res)
-  end
-
-  usage "data XXX # call 'GET XXX', then extract data as json"
-  task data, "XXX" do
-    if limit = config.limit?
-      res = client.get(arg1, {"limit" => limit.to_s})
-    else
-      res = client.get(arg1)
-    end
-    json = JSON::Parser.new(res.body).parse
-    data = json["data"]? || abort "res[data] not found"
-    puts data.to_json
   end
 
   private def show_headers(res : Adgen::Response)

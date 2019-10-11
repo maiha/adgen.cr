@@ -1,9 +1,14 @@
 syntax = "proto2";
 
+import "native_pure_ad_budget.proto";
+import "native_pure_ad_creative.proto";
+
 message NativePureAd {
-  optional int64  publisher_id        = 1 ; // 0
-  optional int64  adsvr_schedule_id   = 2 ; // 0
-  optional string adsvr_schedule_name = 3 ; // "string"
+  required int64  publisher_id                    = 1 ; // 0
+  optional int64  adsvr_schedule_id               = 2 ; // 0
+  optional string adsvr_schedule_name             = 3 ; // "string"
+  optional NativePureAdBudget pure_ad_budget      = 4;
+  repeated NativePureAdCreative pure_ad_creatives = 5;
 }
 
 message NativePureAdArray {

@@ -25,7 +25,8 @@ dependencies:
     version: ">= 0.7.5"
   curl:
     github: maiha/curl.cr
-    version: ">= 0.4.2"
+    #version: ">= 0.4.2"
+    commit: "149b44706fd9e3cfd140c69e94d2039cb6f4ed1a"
 
 development_dependencies:
   clickhouse:

@@ -18,12 +18,17 @@ module Cli::Helpers::Token
   end
 
   private def active_token : Adgen::Proto::Token
-    token = load_token? || raise Adgen::NotAuthorized.new("no tokens (#{token_path})")
+    token = current_token
     token.valid!
     return token
   end
 
+  private def current_token : Adgen::Proto::Token
+    load_token? || raise Adgen::NotAuthorized.new("no tokens (#{token_path})")
+  end
+
   private def authorize!
+    client = config.adgen_client
     token = client.authorize!(config.api_email, config.api_password)
     save_token(token)
     return token

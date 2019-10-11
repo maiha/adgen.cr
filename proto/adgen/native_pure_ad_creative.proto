@@ -1,0 +1,15 @@
+syntax = "proto2";
+
+message NativePureAdCreative {
+  optional int64  adsvr_creative_id   = 1 ; // 6877
+  optional string adsvr_creative_name = 2 ; // "P-プレビューテスト(119)"
+  optional string native_title        = 3 ; // "広告タイトル 必須"
+  optional string native_sponsored    = 4 ; // "広告主名"
+  optional string native_ctatext      = 5 ; // "CTAボタン"
+  optional string main_image          = 6 ; // "xxx"
+  optional string icon_image          = 7 ; // "yyy"
+}
+
+message NativePureAdCreativeArray {
+  repeated NativePureAdCreative array = 1;
+}
