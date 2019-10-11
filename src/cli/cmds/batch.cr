@@ -46,13 +46,12 @@ Cmds.command "batch" do
 
   task "clickhouse" do
     invoke_task("clickhouse_import")
-    invoke_task("clickhouse_after")
 
     update_status "[clickhouse:done] DB:#{db} MEM:#{Pretty.process_info.max}", logger: "INFO"
   end
 
   task "clickhouse_import" do
-#    import_clickhouse_tsv Adgen::Proto::Pure
+    import_clickhouse_tsv
   end
   
   task "gc" do

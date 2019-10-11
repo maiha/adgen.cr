@@ -20,42 +20,24 @@ class Cmds::BatchCmd
 
     sql = Bundled::SQL["adsvr_creative"]
     keys = Clickhouse::Schema::Create.parse(sql).columns.map(&.name)
-    
+
     data = disk.measure {
       CSV.build(quoting: quote, separator: sep) do |csv|
-        csv.row(keys)
+        # csv.row(keys)
         ads.each do |ad|
           creatives = ad.pure_ad_creatives || next
-          budget    = ad.pure_ad_budget || Adgen::Proto::NativePureAdBudget.new
+          budget = ad.pure_ad_budget || Adgen::Proto::NativePureAdBudget.new
+
           creatives.each do |creative|
             vals = Array(String).new
 
             keys.each do |key|
-              case key
-              # [NativePureAd]
-              when "publisher_id"
-                vals << tsv_serialize(ad.publisher_id)
-              when "adsvr_schedule_id"
-                vals << tsv_serialize(ad.adsvr_schedule_id)
-              when "adsvr_schedule_name"
-                vals << tsv_serialize(ad.adsvr_schedule_name)
-
-              # [NativePureAdCreative]
-              # adsvr_creative_id   = 1 ; // 6877
-              # adsvr_creative_name = 2 ; // "P-プレビューテスト(119)"
-              # native_title        = 3 ; // "広告タイトル 必須"
-              # native_sponsored    = 4 ; // "広告主名"
-              # native_ctatext      = 5 ; // "CTAボタン"
-              when "adsvr_creative_id"
-                vals << tsv_serialize(creative.adsvr_creative_id)
-              when "adsvr_creative_name"
-                vals << tsv_serialize(creative.adsvr_creative_name)
-              when "native_title"
-                vals << tsv_serialize(creative.native_title)
-              when "native_sponsored"
-                vals << tsv_serialize(creative.native_sponsored)
-              when "native_ctatext"
-                vals << tsv_serialize(creative.native_ctatext)
+              if Adgen::Proto::NativePureAd::Fields[key]?
+                vals << tsv_serialize(ad[key]?)
+              elsif Adgen::Proto::NativePureAdBudget::Fields[key]?
+                vals << tsv_serialize(budget[key]?)
+              elsif Adgen::Proto::NativePureAdCreative::Fields[key]?
+                vals << tsv_serialize(creative[key]?)
               else
                 raise "[BUG] #{hint} got unknown key: #{key.inspect}"
               end

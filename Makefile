@@ -2,6 +2,7 @@ SHELL=/bin/bash
 
 BUILD := crystal build src/cli/bin/adgen.cr
 DOCKER_BUILD := docker-compose run --rm crystal $(BUILD)
+WARNINGS := none
 
 export UID = $(shell id -u)
 export GID = $(shell id -g)
@@ -16,15 +17,11 @@ all: adgen-dev
 
 .PHONY: adgen-dev
 adgen-dev:
-	$(BUILD) -o $@ --warnings none
+	$(BUILD) -o $@ --warnings $(WARNINGS)
 
 .PHONY: adgen
 adgen:
-	$(BUILD) -o $@ -D with_pb --link-flags "-static" --release
-
-.PHONY: adgen-pb
-adgen-pb:
-	$(BUILD) -o $@ -D with_pb
+	$(BUILD) -o $@ --warnings $(WARNINGS) --link-flags "-static" --release
 
 .PHONY : fbget
 fbget:
@@ -58,7 +55,7 @@ proto_each:
 	done
 
 .PHONY : test
-test: check_version_mismatch spec progs
+test: check_version_mismatch spec
 
 .PHONY : spec
 spec:

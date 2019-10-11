@@ -4,20 +4,20 @@ describe Adgen::Client do
   describe "#request" do
     it "builds request object" do
       client = Adgen::Client.new(api: "/me")
-      client.request.to_s.should eq("https://graph.adgen.com/me")
+      client.request.to_s.should eq("https://ad-generation.jp/me")
     end
 
     it "respects api" do
       client = Adgen::Client.new(api: "/v4.0/me")
-      client.request.to_s.should eq("https://graph.adgen.com/v4.0/me")
+      client.request.to_s.should eq("https://ad-generation.jp/v4.0/me")
 
       client = Adgen::Client.new
       client.api = Adgen::Api::Get.new("/me", data: {"limit" => "2"})
-      client.request.to_s.should eq("https://graph.adgen.com/me?limit=2")
+      client.request.to_s.should eq("https://ad-generation.jp/me?limit=2")
 
       client = Adgen::Client.new
       client.api = Adgen::Api::Get.parse("/me -d limit=3")
-      client.request.to_s.should eq("https://graph.adgen.com/me?limit=3")
+      client.request.to_s.should eq("https://ad-generation.jp/me?limit=3")
     end
 
     it "respects host" do
@@ -33,7 +33,7 @@ describe Adgen::Client do
         client = Adgen::Client.new(auth: "xxx")
         client.dryrun!
 
-        expect_raises(Adgen::Dryrun, "curl -s -G -d 'a=1' -d 'b=2' -d 'token=xxx' https://graph.adgen.com/foo") do
+        expect_raises(Adgen::Dryrun, "curl -s -G -d 'a=1' -d 'b=2' -d 'token=xxx' https://ad-generation.jp/foo") do
           client.get("/foo -d a=1 -d b=2")
         end
       end
@@ -44,7 +44,7 @@ describe Adgen::Client do
         client = Adgen::Client.new(auth: "xxx")
         client.dryrun!
 
-        expect_raises(Adgen::Dryrun, "curl -s -G -d 'a=x' -d 'b=2' -d 'token=xxx' https://graph.adgen.com/foo") do
+        expect_raises(Adgen::Dryrun, "curl -s -G -d 'a=x' -d 'b=2' -d 'token=xxx' https://ad-generation.jp/foo") do
           client.get("/foo -d a=1 -d b=2", {"a" => "x"})
         end
       end
@@ -69,7 +69,7 @@ describe Adgen::Client do
       client.auth = "xxx"
       client.dryrun!
 
-      expect_raises(Adgen::Dryrun, "curl -s -G -d 'token=xxx' https://graph.adgen.com/me") do
+      expect_raises(Adgen::Dryrun, "curl -s -G -d 'token=xxx' https://ad-generation.jp/me") do
         client.execute
       end
     end

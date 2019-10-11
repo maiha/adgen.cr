@@ -12,6 +12,7 @@ adgen for [Crystal](http://crystal-lang.org/).
 dependencies:
   adgen:
     github: maiha/adgen.cr
+    version: 0.1.0
 ```
 
 2. Run `shards install`
@@ -21,14 +22,22 @@ dependencies:
 ```crystal
 require "adgen"
 
-client = Adgen::Client.new(token: "xxxxxx")
+# generate token
+client = Adgen::Client.new
+token  = client.authorize!("user.name@example.com", "password")
+token.value # => "eyJ0..."
+
+# call api
+client = Adgen::Client.new(token: "xxxxxx") # "xxxxxx" is a token value
 res = client.get("/api/v2/report/performances")
 puts res.body
 ```
 
 ## Development
 
-TODO: Write development instructions here
+```console
+$ make test
+```
 
 ## Contributing
 
