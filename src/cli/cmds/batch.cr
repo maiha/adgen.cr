@@ -41,7 +41,7 @@ Cmds.command "batch" do
   end
 
   task "tsv", "<date>" do
-#    tsv_impl
+    tsv_impl
   end  
 
   task "clickhouse" do
