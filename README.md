@@ -4,7 +4,31 @@ adgen for [Crystal](http://crystal-lang.org/).
 
 - crystal: 0.31.1
 
-## Installation
+## Usage (batch)
+
+1. setup config
+
+```console
+$ adgen config sample > .adgenrc
+
+$ vi .adgenrc
+[api]
+email      = "..."
+password   = "..."
+
+[batch]
+publisher_ids   = [3]
+```
+
+2. run
+
+```console
+$ adgen batch run today
+```
+
+## Usage (lib)
+
+### Installation
 
 1. Add the dependency to your `shard.yml`:
 
@@ -17,7 +41,7 @@ dependencies:
 
 2. Run `shards install`
 
-## Usage
+### example
 
 ```crystal
 require "adgen"
@@ -35,8 +59,19 @@ puts res.body
 
 ## Development
 
+### test
+
 ```console
 $ make test
+```
+
+### build
+
+- Ubuntu 18.04.3 LTS
+- libcurl.so.4
+
+```console
+$ make
 ```
 
 ## Contributing
