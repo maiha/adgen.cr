@@ -1,4 +1,4 @@
-# adgen.cr
+# adgen.cr [![Build Status](https://travis-ci.org/maiha/adgen.cr.svg?branch=master)](https://travis-ci.org/maiha/adgen.cr)
 
 adgen for [Crystal](http://crystal-lang.org/).
 
