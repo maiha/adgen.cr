@@ -14,7 +14,6 @@ dependencies:
   protobuf:
     github: maiha/protobuf.cr
     branch: json
-    commit: "cb7352d420ab8f66537d4ca242e5c22b16bf8c36"
   protobuf-storage:
     github: maiha/protobuf-storage.cr
     version: ">= 0.3.2"

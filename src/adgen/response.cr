@@ -39,7 +39,7 @@ module Adgen
     def server_error?  ; 500 <= code <= 599; end
 
     def success! : Response
-      success? || raise Adgen::Api::Error.new(self)
+      success? || raise Adgen::Api::Error.new(req, self)
       return self
     end
 

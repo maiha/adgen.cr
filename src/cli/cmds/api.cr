@@ -40,7 +40,7 @@ Cmds.command "api" do
       lines << [k.to_s, v.inspect]
     end
     puts Pretty.lines(lines, delimiter: " ").split(/\n/).map(&.gsub(/\s+$/,"")).join("\n")
-  rescue Adgen::Api::Error
+  rescue Adgen::Response::Error
     puts "N/A"
   rescue err
     puts "!!!!!!!!!!! #{err} !!!!!!!!!!!!"
@@ -49,7 +49,7 @@ Cmds.command "api" do
 
   private def show_body(res : Adgen::Response)
     puts Pretty.json(res.body, color: config.colorize?)
-  rescue Adgen::Api::Error
+  rescue Adgen::Response::Error
     puts "N/A"
   rescue
     puts res.body

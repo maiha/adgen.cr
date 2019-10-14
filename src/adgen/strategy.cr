@@ -11,21 +11,21 @@ module Adgen::Strategy
 
   def execute(*args, **opts)
     req = request(*args, **opts)
+    execute(req)
+  end
 
+  def execute(req : Request) : Response
     before_validate.each &.call(req)
     validate(req)
 
     before_execute.each &.call(req)
-
-    begin
-      res = execute(req)
-      return res
-    ensure
-      after_execute.each(&.call(req, res))
-    end
-  end
-
-  def execute(req : Request) : Response
-    strategy.execute(req)
+    res = strategy.execute(req)
+    return res
+  rescue except : Adgen::Dryrun | Adgen::Auth::NotAuthorizedError
+    raise except
+  rescue cause
+    raise Api::Error.new(req, res, cause)
+  ensure
+    after_execute.each(&.call(req, res))
   end
 end

@@ -11,7 +11,7 @@ describe Adgen::Callback do
       client.before_execute {|i| callbacks << "before_execute" }
       client.after_execute  {|i| callbacks << "after_execute" }
 
-      expect_raises(Curl::Error) {client.get("/me")}
+      expect_raises(Adgen::Api::Error) {client.get("/me")}
       callbacks.should eq(["before_validate", "before_execute", "after_execute"])
     end
   end

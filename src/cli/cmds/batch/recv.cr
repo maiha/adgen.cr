@@ -25,7 +25,7 @@ class Cmds::BatchCmd
   private var retry_attempts : Int32
 
   private var visited_urls = Set(String).new
-  
+
   def load_publisher_ids : Array(Int32)
     config.batch_publisher_ids
   end
@@ -85,7 +85,7 @@ class Cmds::BatchCmd
       end
     end
 
-    client = authorized_client
+    client = new_client(refresh_token: true)
     client.api = url_builder(name, {"PUBLISHER_ID" => publisher_id.to_s}).call
     url = client.request.authorize!.url # Embeds access token
 
@@ -100,7 +100,7 @@ class Cmds::BatchCmd
       end
 
       begin
-        recv_impl_main(url, house, parser)
+        recv_impl_main(client, url, house, parser)
         break
       rescue err
         self.retry_attempts += 1
@@ -119,8 +119,7 @@ class Cmds::BatchCmd
     raise err
   end
 
-  private def recv_impl_main(url, house, parser)
-    client = new_client
+  private def recv_impl_main(client, url, house, parser)
     client.authorized_url!(url)
 
     # validte url before execute
@@ -155,13 +154,26 @@ class Cmds::BatchCmd
     house.tmp(pbs)
   end
 
-  private def new_client(api : String? = nil)
+  private def new_client(api : String? = nil, refresh_token = false)
     client = config.adgen_client
     client.api = api
     client.after_execute {|req, res|
       pb = build_http_call(req, res)
       http_house.save(pb)
     }
+    if refresh_token
+      refresh_token!(client)
+    end
     return client
+  end
+
+  private def refresh_token!(client)
+    logger.debug "[API] get token"
+    token = client.authorize!(config.api_email, config.api_password)
+    logger.debug "[API] get token: #{token}"
+    save_token(token)           # Cli::Helpers::Token
+    token.valid!
+    client.auth = token.value
+    logger.info "[API] refresh token: #{token}"
   end
 end

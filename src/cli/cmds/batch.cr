@@ -17,7 +17,6 @@ Cmds.command "batch" do
   #   See each task
   task "run", "<date>" do
     invoke_task("recv")
-    invoke_task("check")
     invoke_task("db")
   end
 
@@ -33,6 +32,10 @@ Cmds.command "batch" do
     recv_native_pure_ad
 
     update_status "[recv:done] API:#{api} MEM:#{Pretty.process_info.max}", logger: "INFO"
+
+  rescue err
+    update_status "[recv] #{err.to_s}", logger: "FATAL"
+    raise err
   end
 
   task "db", "<date>" do
@@ -61,10 +64,6 @@ Cmds.command "batch" do
     gc_tsv
 
     update_status "[gc:done] DISK:#{disk} MEM:#{Pretty.process_info.max}", logger: "INFO"
-  end
-  
-  task "check", "<date>" do
-#    status_impl
   end
 end
 

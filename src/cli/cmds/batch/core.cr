@@ -2,7 +2,7 @@
 class Cmds::BatchCmd
   ### API
   var api_base_interval : Time::Span = 3.seconds # interval between retries
-  
+
   ### for tasks
   var api  = Pretty::Stopwatch.new # total time of API
   var db   = Pretty::Stopwatch.new # total time of DB
@@ -16,11 +16,8 @@ class Cmds::BatchCmd
   var target_ymd  : String         # logical ymd for the resources
   
   var work_dir     : String        # abs path
-  var global_dir    : String        # abs path
+  var global_dir   : String        # abs path
   var today_dir    : String        # abs path
-  var snap_dir     : String
-  var snap_tsv     : String
-  var snap_tmp     : String
   var executed_at  : Time
   var console      : CompositeLogger = CompositeLogger.new(Logger.new(STDERR))
   var batch_logger : CompositeLogger = CompositeLogger.new(Logger.new(nil))
@@ -40,11 +37,8 @@ class Cmds::BatchCmd
 
     setup_target_date!(arg1?)
 
-    self.today_dir = "#{work_dir}/#{target_ymd}"
-
-    self.snap_dir = File.join(today_dir, "snap")
-    self.snap_tsv = File.join(today_dir, "tsv/snap.tsv")
-    self.snap_tmp = File.join(today_dir, "snap.tmp")
+    self.today_dir  = "#{work_dir}/#{target_ymd}"
+    self.token_path = "#{today_dir}/token.pb"
     
     self.batch_logger  = build_batch_logger("#{today_dir}/#{task_name}.log")
     self.status_logger = config.build_batch_status_logger?

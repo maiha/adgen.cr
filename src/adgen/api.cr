@@ -3,15 +3,29 @@ module Adgen::Api
   abstract def apply_access_token!(token : String)
   abstract def validate!
 
+  # `Adgen::Api::Error` is an error object occurred in api execution
   class Error < Exception
+    var request  : Request
     var response : Response
 
-    def initialize(@response : Response)
-      super(to_s)
+    def initialize(@request, @response, @cause = nil)
+      super(build_message, @cause)
     end
 
     def to_s(io : IO)
-      io << response.code.to_s
+      io << message
+    end
+
+    private def build_message
+      if res = response?
+        v = Adgen::Response::Error.new(res).to_s
+      elsif cause = @cause
+        v = "#{cause.message} (#{request.url})"
+      else
+        v = request.url
+      end
+
+      return v.strip
     end
   end
 
