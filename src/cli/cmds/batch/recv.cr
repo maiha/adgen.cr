@@ -20,6 +20,12 @@ class Cmds::BatchCmd
   META_WARN         = "warn"
   META_ERROR        = "error"
 
+  class RetryableError < Exception
+    def initialize(err)
+      super(err.to_s, cause: err)
+    end
+  end
+
   # cache config values
   private var skip_400 : Bool          = config.batch_skip_400?
   private var retry_attempts : Int32
@@ -42,36 +48,42 @@ class Cmds::BatchCmd
       return false
     end
 
-    # check already fetched
-    already_fetched_publisher_ids = house.load.map(&.publisher_id)
-
     recv.start
 
     # iterate job
     done_count = 0
     publisher_ids = load_publisher_ids
     publisher_ids.each_with_index do |publisher_id, i|
+      # publisher_id: 3
+      # house       : "20191018/Adgen::Proto::NativePureAd"
+      # room        : "20190912/Adgen::Proto::NativePureAd/data/3"
+      room  = house.chdir(File.join(house.dir, "data", publisher_id.to_s))
       label = "%s(%s/%s)[%s]" % [hint, i+1, publisher_ids.size, publisher_id]
-      if already_fetched_publisher_ids.includes?(publisher_id)
-        msg = "%s (skip: cached)" % [hint]
-        update_status msg, logger: "INFO"
-      else
-        recv_native_pure_ad_impl(name, label, house, parser, publisher_id, i)
-      end
+      recv_native_pure_ad_impl(name, label, room, parser, publisher_id, i)
+      done_count += 1 if room.meta[META_DONE]?
+    end
+
+    # mark meta.done if all metas have been finished.
+    record_count = house.count
+    if done_count == publisher_ids.size
+      house.meta[META_DONE] = "got #{record_count}"
     end
 
     recv.stop
 
-    count = house.tmp.load.size
-    house.commit({META_DONE => "got #{count}"})
-
     # job summary
-    msg = "#{hint} got #{count} [#{recv.last}]"
+    msg = "#{hint} got #{record_count} records (in recv: #{recv})"
     update_status msg, logger: "INFO"
   end
 
   def recv_native_pure_ad_impl(name, hint, house, parser, publisher_id, loop_counter)
     @retry_attempts = 0       # reset retry
+
+    # if done, nothing to do
+    if msg = house.meta[META_DONE]?
+      logger.info "%s (already %s)" % [hint, msg]
+      return false
+    end
 
     # if 400, nothing to do
     if house.meta[META_STATUS]? == "400"
@@ -86,23 +98,40 @@ class Cmds::BatchCmd
     end
 
     client = new_client(refresh_token: true)
-    client.api = url_builder(name, {"PUBLISHER_ID" => publisher_id.to_s}).call
-    url = client.request.authorize!.url # Embeds access token
+    
+    # check resumable url, or build initial url
+    if url = house.resume?
+      logger.info "%s found suspended job" % [hint]
+    else
+      url = url_builder(name, {"PUBLISHER_ID" => publisher_id.to_s}).call
+      house.checkin(url)
+    end
 
+    loop_counter = 0
     self.retry_attempts = 0
     max_attempts = config.batch_max_attempts
     recv.start
 
-    while true
+    while (unauthed_url = house.resume?) && !house.meta[META_DONE]?
+      loop_counter += 1 if retry_attempts == 0 # increment only when not retry
+
       label = "#{hint}##{loop_counter}"
       if retry_attempts > 0
         label = "#{label}(retry #{retry_attempts})"
       end
 
+      if loop_counter > max_attempts
+        raise "#{label} reached max loop limit(#{max_attempts})"
+      end        
+
+      client.api = unauthed_url
+      url = client.request.authorize!.url # Embeds access token
+      
       begin
         recv_impl_main(client, url, house, parser)
         break
-      rescue err
+      rescue err : RetryableError
+        update_status err.to_s, logger: "INFO"
         self.retry_attempts += 1
       end
     end
@@ -149,9 +178,19 @@ class Cmds::BatchCmd
     # write status into meta
     house.meta[META_STATUS] = res.code.to_s
 
-    res.success!
-    pbs = parser.from_json(res.body).map(&.to_pb)
-    house.tmp(pbs)
+    begin
+      res.success!
+      pbs = parser.from_json(res.body).map(&.to_pb)
+      house.write(pbs, {META_DONE => "got #{pbs.size}"})
+    rescue err : Adgen::Api::Error
+      if res.server_error?
+        # retry
+        raise RetryableError.new(err)
+      else
+        # fatal
+        raise err
+      end
+    end
   end
 
   private def new_client(api : String? = nil, refresh_token = false)
