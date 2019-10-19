@@ -9,6 +9,7 @@ class Adgen::Config < TOML::Config
   bool "colorize"
   int  "limit"
   str  "fields"
+  str  "format"
 
   # api
   str  "api/token_path"

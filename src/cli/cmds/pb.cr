@@ -232,6 +232,11 @@ Cmds.command "pb" do
   end
 
   private def show(pb : Protobuf::Message, i : Int32)
+    if config.format? == "pb"
+      print pb.to_protobuf
+      return
+    end
+
     if config.verbose?
       show_item_delimiter(i)
       lines = Array(Array(String)).new
