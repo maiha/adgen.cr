@@ -49,7 +49,7 @@ class Adgen::Response
     end
     
     def to_s(io : IO)
-      io << "%s: %s (%s)" % [code, message, req.url]
+      io << "%s: %s (%s)" % [code, message, req.safe_url]
     end
   end
 end

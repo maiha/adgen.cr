@@ -18,6 +18,11 @@ class Adgen::Request
     u.to_s
   end
 
+  # url without query_string for security reason
+  def safe_url : String
+    url.sub(/\?.*$/, "")
+  end
+
   def authorize! : Request
     auth.authorize!(self)
     return self

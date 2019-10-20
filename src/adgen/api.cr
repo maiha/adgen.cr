@@ -17,12 +17,13 @@ module Adgen::Api
     end
 
     private def build_message
+      url = request.safe_url
       if res = response?
         v = Adgen::Response::Error.new(res).to_s
       elsif cause = @cause
-        v = "#{cause.message} (#{request.url})"
+        v = "#{cause.message} (#{url})"
       else
-        v = request.url
+        v = url
       end
 
       return v.strip
