@@ -42,11 +42,11 @@ class Cmds::BatchCmd
     house  = house(Adgen::Proto::NativePureAd)
     parser = Array(Adgen::NativePureAd)
     
-    # check done
-    if msg = house.meta[META_DONE]?
-      update_status "#{hint} (already #{msg})", logger: "INFO"
-      return false
-    end
+    # We should not check house.meta_done because publisher_ids may be changed
+    # if msg = house.meta[META_DONE]?
+    #   update_status "#{hint} (already #{msg})", logger: "INFO"
+    #   return false
+    # end
 
     recv.start
 
@@ -64,7 +64,7 @@ class Cmds::BatchCmd
     end
 
     # mark meta.done if all metas have been finished.
-    record_count = house.count
+    record_count = house.load.size # not use house.count to avoid cached count in meta
     if done_count == publisher_ids.size
       house.meta[META_DONE] = "got #{record_count}"
     end
@@ -73,7 +73,7 @@ class Cmds::BatchCmd
 
     # job summary
     msg = "#{hint} got #{record_count} records (in recv: #{recv})"
-    update_status msg, logger: "INFO"
+    update_status msg, logger: "INFO", flush: true
   end
 
   def recv_native_pure_ad_impl(name, hint, house, parser, publisher_id, loop_counter)
@@ -81,7 +81,8 @@ class Cmds::BatchCmd
 
     # if done, nothing to do
     if msg = house.meta[META_DONE]?
-      logger.info "%s (already %s)" % [hint, msg]
+      msg = "%s (already %s)" % [hint, msg]
+      update_status msg, logger: "INFO", flush: true
       return false
     end
 
@@ -89,10 +90,10 @@ class Cmds::BatchCmd
     if house.meta[META_STATUS]? == "400"
       msg = "%s (skip: ERROR 400)" % [hint]
       if skip_400
-        update_status msg, logger: "INFO"
+        update_status msg, logger: "INFO", flush: true
         return false
       else
-        update_status msg
+        update_status msg, logger: "ERROR", flush: true
         raise msg
       end
     end
@@ -105,6 +106,7 @@ class Cmds::BatchCmd
     else
       url = url_builder(name, {"PUBLISHER_ID" => publisher_id.to_s}).call
       house.checkin(url)
+      logger.debug "%s created new url: %s" % [hint, url]
     end
 
     loop_counter = 0
@@ -128,7 +130,7 @@ class Cmds::BatchCmd
       url = client.request.authorize!.url # Embeds access token
       
       begin
-        recv_impl_main(client, url, house, parser)
+        recv_impl_main(client, url, house, parser, hint)
         break
       rescue err : RetryableError
         update_status err.to_s, logger: "INFO"
@@ -139,7 +141,7 @@ class Cmds::BatchCmd
     recv.stop
 
     msg = "%s %s [%s]" % [hint, house.count, recv.last.to_s]
-    update_status msg, logger: "INFO"
+    update_status msg, logger: "INFO", flush: true
 
     return true
 
@@ -148,7 +150,7 @@ class Cmds::BatchCmd
     raise err
   end
 
-  private def recv_impl_main(client, url, house, parser)
+  private def recv_impl_main(client, url, house, parser, hint)
     client.authorized_url!(url)
 
     # validte url before execute
@@ -163,6 +165,7 @@ class Cmds::BatchCmd
       else
         raise "[BUG] no access_token: #{url}"
       end
+      logger.debug "#{hint} #{url}"
     }
 
     client.after_execute {|req, res|
