@@ -36,7 +36,7 @@ $ adgen batch run today
 dependencies:
   adgen:
     github: maiha/adgen.cr
-    version: 0.2.0
+    version: 0.3.0
 ```
 
 2. Run `shards install`
