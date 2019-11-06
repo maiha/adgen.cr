@@ -25,6 +25,14 @@ Cmds.command "api" do
     res = client.get(path)
     show(res)
   end
+
+  usage "native_house_ads PUBLISHER_ID # native_house_ads 3"
+  task native_house_ads, "3" do
+    path = "/api/v2/marketech/native_house_ads?publisher_id=#{arg1}"
+    client = authorized_client
+    res = client.get(path)
+    show(res)
+  end
   
   usage "get XXX # get 'XXX' as is"
   task get, "XXX" do
