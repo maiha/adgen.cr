@@ -1,5 +1,11 @@
 # add methods to open class
 class Cmds::BatchCmd
+  PUBLISHER_MODEL_CLASS_IDS = [] of String
+
+  private macro publisher_model(klass)
+    {% PUBLISHER_MODEL_CLASS_IDS << klass %}
+  end
+
   ### API
   var api_base_interval : Time::Span = 3.seconds # interval between retries
 

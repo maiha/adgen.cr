@@ -29,7 +29,7 @@ Cmds.command "batch" do
   # [Output]
   #   FILE: Adgen::Proto::*/
   task "recv", "<date>" do
-    recv_native_pure_ad
+    recv_impl
 
     update_status "[recv:done] API:#{api} MEM:#{Pretty.process_info.max}", logger: "INFO"
 

@@ -1,0 +1,15 @@
+syntax = "proto2";
+
+message NativeHouseAdCreative {
+  optional int64  adsvr_creative_id   = 1 ; // 6447
+  optional string adsvr_creative_name = 2 ; // "H-ネイティブ(408)"
+  optional string native_title        = 3 ; // "広告タイトル"
+  optional string native_sponsored    = 4 ; // "広告主"
+  optional string native_ctatext      = 5 ; // "インストールする"
+  optional string main_image          = 6 ; // "http..."
+  optional string icon_image          = 7 ; // "http..."
+}
+
+message NativeHouseAdCreativeArray {
+  repeated NativeHouseAdCreative array = 1;
+}

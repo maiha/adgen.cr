@@ -1,0 +1,14 @@
+syntax = "proto2";
+
+import "native_house_ad_creative.proto";
+
+message NativeHouseAd {
+  required int64  publisher_id                      = 1 ; // 0
+  optional int64  adsvr_schedule_id                 = 2 ; // 0
+  optional string adsvr_schedule_name               = 3 ; // "string"
+  repeated NativeHouseAdCreative house_ad_creatives = 4;
+}
+
+message NativeHouseAdArray {
+  repeated NativeHouseAd array = 1;
+}
