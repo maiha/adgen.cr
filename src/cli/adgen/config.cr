@@ -44,7 +44,7 @@ class Adgen::Config < TOML::Config
     self.str?("#{model}/cmd")
   end
 
-  def skip_400?(model) : Bool?
+  def skip_400?(model) : Bool
     v = self["#{model}/skip_400"]?
     case v
     when Bool
@@ -52,6 +52,10 @@ class Adgen::Config < TOML::Config
     else
       batch_skip_400?
     end
+  end
+  
+  def skip_404?(model) : Bool
+    !! self["#{model}/skip_404"]?
   end
   
   def adgen_client : Adgen::Client
@@ -194,12 +198,19 @@ level    = "DEBUG"
 
 [[logger]]
 path     = "STDOUT"
-level    = "=INFO"
+level    = "INFO"
 colorize = true
 
 [[logger]]
-path     = "STDERR"
-level    = ">=WARN"
+path     = "warn"
+mode     = "a+"
+level    = "=WARN"
+colorize = true
+
+[[logger]]
+path     = "err"
+mode     = "a+"
+level    = "=ERROR"
 colorize = true
 
 [native_pure_ad]
@@ -207,4 +218,6 @@ cmd = "/api/v2/marketech/native_pure_ads -d publisher_id={PUBLISHER_ID}"
 
 [native_house_ad]
 cmd = "/api/v2/marketech/native_house_ads -d publisher_id={PUBLISHER_ID}"
+skip_404 = true
+
 EOF

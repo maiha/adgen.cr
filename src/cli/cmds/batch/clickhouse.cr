@@ -9,6 +9,14 @@ class Cmds::BatchCmd
 
   private def import_clickhouse_tsv
     import_clickhouse_tsv_impl("adsvr_creative")
+
+    {% for klass in PUBLISHER_MODEL_CLASS_IDS %}
+      {% name = klass.stringify.underscore %}
+      if enabled?({{name}}) # "native_pure_ad", "native_house_ad"
+        name = "adsvr_creative_" + native_shorten_name({{name}})
+        import_clickhouse_tsv_impl(name)
+      end
+    {% end %}
   end
 
   private def import_clickhouse_tsv_impl(table, path = nil)

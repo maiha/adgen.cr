@@ -5,10 +5,14 @@
 #         + meta/
 #            + done # => ""
 #         + data/
-#            + 00001.pb.gz
+#            + 2296/
+#               + data/
+#                  + 00001.pb.gz
 #     + Adgen::Proto::NativePureAd/
 #         + data/
-#            + 00001.pb.gz
+#            + 2296/
+#               + data/
+#                  + 00001.pb.gz
 # ```
 
 # add methods to open class
@@ -44,18 +48,8 @@ class Cmds::BatchCmd
     # write status into meta
     house.meta[META_STATUS] = res.code.to_s
 
-    begin
-      res.success!
-      pbs = parser.from_json(res.body).map(&.to_pb)
-      house.write(pbs, {META_DONE => "got #{pbs.size}"})
-    rescue err : Adgen::Api::Error
-      if res.server_error?
-        # retry
-        raise RetryableError.new(err)
-      else
-        # fatal
-        raise err
-      end
-    end
+    res.success!
+    pbs = parser.from_json(res.body).map(&.to_pb)
+    house.write(pbs, {META_DONE => "got #{pbs.size}"})
   end
 end

@@ -100,9 +100,27 @@ class Cmds::BatchCmd
       begin
         recv_impl(client, url, house, parser, hint)
         break
-      rescue err : RetryableError
-        update_status err.to_s, logger: "INFO"
-        self.retry_attempts += 1
+      rescue err : Adgen::Api::Error
+        res = err.response
+        case res.code
+        when 404
+          if config.skip_404?(name)
+            # For the new API, ignore 404 without making an error
+            msg = "%s (skip: ERROR 404)" % [hint]
+            house.meta[META_ERROR] = msg
+            update_status msg, logger: "WARN", flush: true
+            return false
+          else
+            raise err
+          end
+        when 500..599
+          # retry for server errors
+          update_status err.to_s, logger: "INFO"
+          self.retry_attempts += 1
+        else
+          # otherwise, raise as fatal
+          raise err
+        end
       end
     end
 

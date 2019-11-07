@@ -1,7 +1,6 @@
 class Cmds::BatchCmd
   var tsv_sep   = '\t'
   var tsv_quote = CSV::Builder::Quoting::NONE
-  var adsvr_creative_keys = Clickhouse::Schema::Create.parse(Bundled::SQL["adsvr_creative"]).columns.map(&.name)
   
   # - convert <TAB> to <SPACE>
   # - convert <BACKSLASH> to <BACKSLASH><BACKSLASH>
@@ -10,20 +9,25 @@ class Cmds::BatchCmd
   end
 
   def tsv_impl_adsvr_creative
-    name  = "adsvr_creative"
-    hint  = "[tsv] #{name}"
-    file  = "#{name}.tsv"
+    hint  = "[tsv] adsvr_creative"
+    file  = "adsvr_creative.tsv"
     path  = "#{today_dir}/tsv/#{file}"
 
+    # touch output path for append
     Pretty::File.write(path, "")
     
     {% for klass in PUBLISHER_MODEL_CLASS_IDS %}
       {% name = klass.stringify.underscore %}
+      if enabled?({{name}}) # "native_pure_ad", "native_house_ad"
+        name = "adsvr_creative_" + native_shorten_name({{name}})
 
-      if enabled?({{name}})
-        part = "#{today_dir}/tsv/adsvr_creative/{{name.id}}.tsv"
-        data = build_tsv_adsvr_creative_{{name.id}}
-        Pretty::File.write(part, data)
+        # We create two kinds of TSV
+        # 1) Data that exactly matches the API schema
+        data = build_tsv_adsvr_creative_{{name.id}}(keys: tsv_keys_for(name))
+        Pretty::File.write("#{today_dir}/tsv/#{name}.tsv", data)
+
+        # 2) Abstract data that can represent all about adsvr_creative_xxx
+        data = build_tsv_adsvr_creative_{{name.id}}(keys: tsv_keys_for("adsvr_creative"))
         File.open(path, "a+"){|f| f.print data}
       end
     {% end %}
@@ -31,7 +35,7 @@ class Cmds::BatchCmd
     logger.info "[tsv] %s [%s]" % [file, disk.last]
   end
 
-  private def build_tsv_adsvr_creative_native_pure_ad
+  private def build_tsv_adsvr_creative_native_pure_ad(keys)
     hint = "[tsv] native_pure_ad"
     ads = house(Adgen::Proto::NativePureAd).load
     logger.info "%s pure ads:%d, creatives:%d" % [hint, ads.size, ads.map(&.creatives.size).sum]
@@ -45,8 +49,10 @@ class Cmds::BatchCmd
 
           creatives.each do |creative|
             vals = Array(String).new
-            adsvr_creative_keys.each do |key|
-              if Adgen::Proto::NativePureAd::Fields[key]?
+            keys.each do |key|
+              if key == "native_type"
+                vals << "pure"
+              elsif Adgen::Proto::NativePureAd::Fields[key]?
                 vals << tsv_serialize(ad[key]?)
               elsif Adgen::Proto::NativePureAdBudget::Fields[key]?
                 vals << tsv_serialize(budget[key]?)
@@ -63,7 +69,7 @@ class Cmds::BatchCmd
     }
   end
 
-  private def build_tsv_adsvr_creative_native_house_ad
+  private def build_tsv_adsvr_creative_native_house_ad(keys)
     hint = "[tsv] native_house_ad"
     ads = house(Adgen::Proto::NativeHouseAd).load
     logger.info "%s house ads:%d, creatives:%d" % [hint, ads.size, ads.map(&.creatives.size).sum]
@@ -76,8 +82,10 @@ class Cmds::BatchCmd
 
           creatives.each do |creative|
             vals = Array(String).new
-            adsvr_creative_keys.each do |key|
-              if Adgen::Proto::NativeHouseAd::Fields[key]?
+            keys.each do |key|
+              if key == "native_type"
+                vals << "house"
+              elsif Adgen::Proto::NativeHouseAd::Fields[key]?
                 vals << tsv_serialize(ad[key]?)
               elsif Adgen::Proto::NativeHouseAdCreative::Fields[key]?
                 vals << tsv_serialize(creative[key]?)
@@ -92,6 +100,11 @@ class Cmds::BatchCmd
       end
     }
   end
+
+  private def tsv_keys_for(name : String) : Array(String)
+    sql = Bundled::SQL[name]? || raise NotImplementedError.new("[BUG] no sql schema for '#{name}'")
+    Clickhouse::Schema::Create.parse(sql).columns.map(&.name)
+  end 
 
   private def tsv_serialize(v) : String
     # Nullable

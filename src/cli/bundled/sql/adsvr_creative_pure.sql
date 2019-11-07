@@ -1,6 +1,5 @@
-CREATE TABLE adsvr_creative (
+CREATE TABLE adsvr_creative_pure (
   publisher_id Int64,
-  native_type String,
   adsvr_schedule_id Nullable(Int64),
   adsvr_schedule_name Nullable(String),
   budget_type Nullable(String),

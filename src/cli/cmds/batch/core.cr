@@ -124,4 +124,13 @@ class Cmds::BatchCmd
   def logger : CompositeLogger
     batch_logger? || console
   end
+
+  private def native_shorten_name(name : String) : String
+    case name
+    when /\Anative_(.*?)_ad\Z/
+      $1
+    else
+      name
+    end
+  end
 end
