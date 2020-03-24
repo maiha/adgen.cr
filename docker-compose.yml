@@ -1,9 +1,11 @@
 version: '2'
 
 services:
-  crystal:
-    image: crystallang/crystal:0.31.1
-    command: shards build --link-flags "-static"
+  alpine:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: shards build
     user: "${UID}:${GID}"
     volumes:
       - .:/v

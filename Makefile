@@ -1,78 +1,97 @@
 SHELL=/bin/bash
 
-BUILD := crystal build src/cli/bin/adgen.cr
-DOCKER_BUILD := docker-compose run --rm crystal $(BUILD)
-WARNINGS := none
-
-export UID = $(shell id -u)
-export GID = $(shell id -g)
-
-VERSION=
-CURRENT_VERSION=$(shell git tag -l | sort -V | tail -1)
-GUESSED_VERSION=$(shell git tag -l | sort -V | tail -1 | awk 'BEGIN { FS="." } { $$3++; } { printf "%d.%d.%d", $$1, $$2, $$3 }')
-
 .SHELLFLAGS = -o pipefail -c
 
 all: adgen-dev
 
+######################################################################
+### compiling
+
+# for mounting permissions in docker-compose
+export UID = $(shell id -u)
+export GID = $(shell id -g)
+
+COMPILE_FLAGS=-Dstatic
+BUILD_TARGET=
+
+ON_ALPINE=docker-compose run --rm alpine
+
+.PHONY: build
+build:
+	@$(ON_ALPINE) shards build $(COMPILE_FLAGS) --link-flags "-static" $(BUILD_TARGET) $(O)
+
 .PHONY: adgen-dev
-adgen-dev:
-	$(BUILD) -o $@ --warnings $(WARNINGS)
+adgen-dev: BUILD_TARGET=adgen-dev
+adgen-dev: build
 
 .PHONY: adgen
-adgen:
-	$(BUILD) -o $@ --warnings $(WARNINGS) --link-flags "-static" --release
+adgen: BUILD_TARGET=--release adgen
+adgen: build
 
-.PHONY : fbget
-fbget:
-	shards build fbget
+.PHONY: console
+console:
+	@$(ON_ALPINE) sh
 
-.adgen-ruby-business-sdk:
-	git clone --depth 2 git@github.com:adgen/adgen-ruby-business-sdk.git .adgen-ruby-business-sdk
+######################################################################
+### testing
+
+.PHONY: ci
+ci: check_version_mismatch test adgen
+
+.PHONY: test
+test: spec
+
+.PHONY: spec
+spec:
+	@$(ON_ALPINE) crystal spec $(COMPILE_FLAGS) -v --fail-fast
+
+.PHONY: check_version_mismatch
+check_version_mismatch: README.md shard.yml
+	diff -w -c <(grep version: $<) <(grep ^version: shard.yml)
+
+######################################################################
+### generating
+
+GENERATOR  ?= bin/adgen-dev
+JSON_FILES ?= $(wildcard json/adgen/*.json)
+CONVERTERS ?= $(addsuffix .cr,$(addprefix src/adgen/converter/,$(basename $(notdir $(wildcard proto/adgen/*.proto)))))
 
 .PHONY: gen
-gen: gen-proto
+gen: proto converter
 
-.PHONY: gen-proto
-gen-proto: .adgen-ruby-business-sdk
-	@crystal gen/proto-adgen.cr
+.PHONY: converter
+converter: $(CONVERTERS)
+
+src/adgen/converter/%.cr:proto/adgen/%.proto $(GENERATOR)
+	@if ! which "$(GENERATOR)" > /dev/null ; then echo "GENERATOR not set"; exit 1; fi
+	$(GENERATOR) pb schema2converter $< "Adgen::" > $@
+
+proto/adgen/%.proto:json/adgen/%.json
+	@if ! which "$(GENERATOR)" > /dev/null ; then echo "GENERATOR not set"; exit 1; fi
+	$(GENERATOR) pb json2schema $< > $@
 
 .PHONY: proto
-proto: proto_each
-
-.PHONY: proto_at_once
-proto_at_once:
+proto: $(subst json,proto,$(JSON_FILES))
 	@mkdir -p src/proto
 	protoc -I proto --crystal_out src/proto proto/*.proto
 	@mkdir -p src/adgen/proto
 	PROTOBUF_NS=Adgen::Proto protoc -I proto -I proto/adgen --crystal_out src/adgen/proto proto/adgen/*.proto
 
-.PHONY: proto_each
-proto_each:
-	@mkdir -p src/cli/proto/adgen
-	@for x in proto/adgen/*.proto; do \
-	  PROTOBUF_NS=Adgen::Proto protoc -I proto -I proto/adgen --crystal_out src/adgen/proto $$x; \
-	done
+######################################################################
+### versioning
 
-.PHONY : test
-test: check_version_mismatch spec
-
-.PHONY : spec
-spec:
-	crystal spec -v --fail-fast
-
-.PHONY : check_version_mismatch
-check_version_mismatch: shard.yml README.md
-	diff -w -c <(grep version: README.md) <(grep ^version: shard.yml)
+VERSION=
+CURRENT_VERSION=$(shell git tag -l | sort -V | tail -1)
+GUESSED_VERSION=$(shell git tag -l | sort -V | tail -1 | awk 'BEGIN { FS="." } { $$3++; } { printf "%d.%d.%d", $$1, $$2, $$3 }')
 
 .PHONY : version
-version:
+version: README.md
 	@if [ "$(VERSION)" = "" ]; then \
 	  echo "ERROR: specify VERSION as bellow. (current: $(CURRENT_VERSION))";\
 	  echo "  make version VERSION=$(GUESSED_VERSION)";\
 	else \
 	  sed -i -e 's/^version: .*/version: $(VERSION)/' shard.yml ;\
-	  sed -i -e 's/^    version: [0-9]\+\.[0-9]\+\.[0-9]\+/    version: $(VERSION)/' README.md ;\
+	  sed -i -e 's/^    version: [0-9]\+\.[0-9]\+\.[0-9]\+/    version: $(VERSION)/' $< ;\
 	  echo git commit -a -m "'$(COMMIT_MESSAGE)'" ;\
 	  git commit -a -m 'version: $(VERSION)' ;\
 	  git tag "v$(VERSION)" ;\

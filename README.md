@@ -2,7 +2,7 @@
 
 adgen for [Crystal](http://crystal-lang.org/).
 
-- crystal: 0.31.1
+- crystal: 0.33.0
 
 ## Usage (batch)
 
@@ -66,9 +66,6 @@ $ make test
 ```
 
 ### build
-
-- Ubuntu 18.04.3 LTS
-- libcurl.so.4
 
 ```console
 $ make

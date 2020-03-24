@@ -20,7 +20,7 @@ struct Adgen::Proto::Token
   def valid! : Adgen::Proto::Token
     value                       # may cause an error when empty
 
-    if expired_at < Time.now
+    if expired_at < Pretty.now
       raise Adgen::TokenExpired.new("expired: '#{expired_at}'")
     end
 

@@ -97,11 +97,11 @@ class Adgen::Config < TOML::Config
     when Nil
       return Logger.new(nil)
     when Array
-      CompositeLogger.new(hash.map{|i| build_logger(i, _path).as(Logger)})
+      Pretty::Logger.new(hash.map{|i| build_logger(i, _path).as(Logger)})
     when Hash
       hint = hash["name"]?.try{|s| "[#{s}]"} || ""
       hash["path"] ||= _path || raise Error.new("logger.path is missing")
-      logger = CompositeLogger.build_logger(hash)
+      logger = Pretty::Logger.build_logger(hash)
       logger.formatter = "{{mark}},[{{time=%H:%M}}] #{hint}{{message}}"
       return logger
     else
@@ -118,7 +118,7 @@ class Adgen::Config < TOML::Config
         "level"  => "INFO",
         "format" => "{{mark}},[{{time=%H:%M}}] {{message}}",
       }
-      return CompositeLogger.new(CompositeLogger.build_logger(opts))
+      return Pretty::Logger.new(Pretty::Logger.build_logger(opts))
     else
       return nil
     end    

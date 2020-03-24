@@ -13,7 +13,7 @@ module Adgen::Strategy
       easy.connect_timeout = connect_timeout.seconds
       easy.timeout         = read_timeout.seconds
       
-      requested_at = Pretty::Time.now
+      requested_at = Pretty.now
 
       case req.method
       when .get?

@@ -13,7 +13,7 @@ module Adgen
     var headers : HTTP::Headers = build_headers
 
     def initialize(@requested_at, @req, @code, @header, @body)
-      @responsed_at = Pretty::Time.now
+      @responsed_at = Pretty.now
     end
 
     def mime_type? : MIME::MediaType?
