@@ -71,7 +71,7 @@ class Cmds::BatchCmd
       STDERR.puts error
     end
 
-    msg = "#{task}, API:#{api}, DB:#{db}, IO:#{disk}, MEM:#{Pretty.process_info.max}"
+    msg = "#{task}, API:#{api}, DB:#{db}, IO:#{disk}, MEM:#{max_mem}"
     if task_state.finished?
       logger.info "[task:done] #{msg}"
     else
@@ -132,5 +132,9 @@ class Cmds::BatchCmd
     else
       name
     end
+  end
+
+  private def max_mem : String
+    Pretty.process_info(skip_invalid: true).max.to_s
   end
 end
