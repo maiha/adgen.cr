@@ -101,8 +101,8 @@ class Cmds::BatchCmd
         recv_impl(client, url, house, parser, hint)
         break
       rescue err : Adgen::Api::Error
-        res = err.response
-        case res.code
+        code = err.response?.try(&.code) || -1
+        case code
         when 404
           if config.skip_404?(name)
             # For the new API, ignore 404 without making an error
