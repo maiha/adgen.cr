@@ -56,7 +56,7 @@ Cmds.command "api" do
   end
 
   private def show_body(res : Adgen::Response)
-    puts Pretty.json(res.body, color: config.colorize?)
+    puts Pretty.json(res.body, color: config.colorize)
   rescue Adgen::Response::Error
     puts "N/A"
   rescue

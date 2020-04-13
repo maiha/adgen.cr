@@ -1,8 +1,11 @@
 /docs/
 /lib/
 /bin/
+/tmp/
 /.shards/
+/.crystal/
 *.dwarf
+/github_release
 
 # Libraries don't need dependency lock
 # Dependencies will be locked in applications that use them

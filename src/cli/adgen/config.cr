@@ -7,7 +7,7 @@ class Adgen::Config < TOML::Config
   bool "verbose"
   bool "dryrun"
   bool "colorize"
-  int  "limit"
+  i32  "limit"
   str  "fields"
   str  "format"
 
@@ -17,24 +17,25 @@ class Adgen::Config < TOML::Config
   str  "api/password"
   bool "api/logging"
   str  "api/url"
-  int  "api/keep_remaining"
+  i32  "api/keep_remaining"
 
-  float "api/dns_timeout"
-  float "api/connect_timeout"
-  float "api/read_timeout"
+  f64  "api/dns_timeout"
+  f64  "api/connect_timeout"
+  f64  "api/read_timeout"
 
   # batch
   str  "batch/work_dir"
   str  "batch/global_dir"
   str  "batch/status_log"
-  int  "batch/max_attempts"
+  i32  "batch/max_attempts"
   bool "batch/skip_400"
   bool "batch/gc"
   bool "batch/pb_logging"
+  i32s "batch/publisher_ids"
 
   # clickhouse
   str "clickhouse/host"
-  int "clickhouse/port"
+  i32 "clickhouse/port"
   str "clickhouse/db"
   str "clickhouse/table"
   
@@ -50,7 +51,7 @@ class Adgen::Config < TOML::Config
     when Bool
       v
     else
-      batch_skip_400?
+      batch_skip_400
     end
   end
   
@@ -68,10 +69,6 @@ class Adgen::Config < TOML::Config
 
     client.dryrun! if dryrun?
     client
-  end
-
-  def batch_publisher_ids : Array(Int32)
-    ints("batch/publisher_ids")
   end
 
   private def build_enabled_recvs

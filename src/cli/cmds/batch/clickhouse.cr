@@ -23,7 +23,7 @@ class Cmds::BatchCmd
     path ||= "#{today_dir}/tsv/#{table}.tsv"
 
     shell = Shell::Seq.new
-    shell.dryrun = config.dryrun?
+    shell.dryrun = config.dryrun
 
     db.measure {
       shell.run("#{PROGRAM_NAME} clickhouse replace #{table} #{path}")
