@@ -66,8 +66,6 @@ class Cmds::BatchCmd
       end
     end
 
-    client = new_client(refresh_token: true)
-    
     # check resumable url, or build initial url
     if url = house.resume?
       logger.info "%s found suspended job" % [hint]
@@ -94,6 +92,9 @@ class Cmds::BatchCmd
         raise "#{label} reached max loop limit(#{max_attempts})"
       end        
 
+      # Due to the short expiration date of the token, it may be invalidated on rerun after a timeout.
+      # Therefore, the token is updated every time just before execution.
+      client = new_client(refresh_token: true)
       client.api = unauthed_url
       url = client.request.authorize!.url # Embeds access token
       
