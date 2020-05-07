@@ -88,9 +88,10 @@ class Cmds::BatchCmd
         label = "#{label}(retry #{retry_attempts})"
       end
 
-      if loop_counter > max_attempts
-        raise "#{label} reached max loop limit(#{max_attempts})"
-      end        
+      # TODO: max_loop_limit
+      # if loop_counter > max_loop_limit
+      #   raise "#{label} reached max loop limit(#{max_loop_limit})"
+      # end        
 
       # Due to the short expiration date of the token, it may be invalidated on rerun after a timeout.
       # Therefore, the token is updated every time just before execution.
@@ -116,8 +117,13 @@ class Cmds::BatchCmd
           end
         when 500..599
           # retry for server errors
-          update_status err.to_s, logger: "INFO"
+          msg = "%s %s" % [label, err]
           self.retry_attempts += 1
+          if retry_attempts < max_attempts
+            update_status msg, logger: "WARN", flush: true
+          else
+            raise msg
+          end
         else
           # otherwise, raise as fatal
           raise err
