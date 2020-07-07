@@ -11,8 +11,6 @@ targets:
     main: src/cli/bin/adgen.cr
 
 dependencies:
-  protobuf:
-    github: maiha/protobuf.cr
   protobuf-storage:
     github: maiha/protobuf-storage.cr
   var:
