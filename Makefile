@@ -36,7 +36,7 @@ console:
 ### testing
 
 .PHONY: ci
-ci: check_version_mismatch test adgen
+ci: check_version_mismatch adgen test
 
 .PHONY: test
 test: spec
