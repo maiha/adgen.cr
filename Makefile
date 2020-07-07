@@ -35,8 +35,11 @@ console:
 ######################################################################
 ### testing
 
+shard.lock: shard.yml
+	$(ON_ALPINE) shards update -v
+
 .PHONY: ci
-ci: check_version_mismatch adgen test
+ci: shard.lock check_version_mismatch adgen test
 
 .PHONY: test
 test: spec
