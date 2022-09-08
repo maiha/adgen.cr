@@ -18,7 +18,7 @@ dependencies:
     github: maiha/var.cr
   pretty:
     github: maiha/pretty.cr
-    version: 1.1.2
+    version: ">= 1.1.2"
   curl:
     github: maiha/curl.cr
 
