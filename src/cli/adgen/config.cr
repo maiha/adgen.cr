@@ -32,6 +32,7 @@ class Adgen::Config < TOML::Config
   bool "batch/gc"
   bool "batch/pb_logging"
   i32s "batch/publisher_ids"
+  str  "batch/target_end_at"
 
   # clickhouse
   str "clickhouse/host"
@@ -179,6 +180,7 @@ gc              = true
 pb_logging      = false
 max_attempts    = 5
 skip_400        = true
+target_end_at   = "today"
 
 # Whether to get the publisher model
 recv_native_pure_ad = true
@@ -211,10 +213,10 @@ level    = "=ERROR"
 colorize = true
 
 [native_pure_ad]
-cmd = "/api/v2/marketech/native_pure_ads -d publisher_id={PUBLISHER_ID}"
+cmd = "/api/v2/marketech/native_pure_ads -d publisher_id={PUBLISHER_ID} -d target_end_at={TARGET_EMD_AT}"
 
 [native_house_ad]
-cmd = "/api/v2/marketech/native_house_ads -d publisher_id={PUBLISHER_ID}"
+cmd = "/api/v2/marketech/native_house_ads -d publisher_id={PUBLISHER_ID} -d target_end_at={TARGET_EMD_AT}"
 skip_404 = true
 
 EOF

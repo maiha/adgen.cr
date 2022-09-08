@@ -6,6 +6,10 @@ class Cmds::BatchCmd
   private def load_publisher_ids : Array(Int32)
     config.batch_publisher_ids
   end
+  
+  private def load_target_end_at : String
+    Pretty::Date.parse?(config.batch_target_end_at).to_s.split[0]
+  end
 
   private def recv_publisher(name, house, parser)
     hint = "[recv] #{name}"
@@ -20,6 +24,7 @@ class Cmds::BatchCmd
 
     # iterate job
     done_count = 0
+    target_end_at = load_target_end_at
     publisher_ids = load_publisher_ids
     publisher_ids.each_with_index do |publisher_id, i|
       # publisher_id: 3
@@ -27,7 +32,7 @@ class Cmds::BatchCmd
       # room        : "20190912/Adgen::Proto::NativePureAd/data/3"
       room  = house.chdir(File.join(house.dir, "data", publisher_id.to_s))
       label = "%s(%s/%s)[%s]" % [hint, i+1, publisher_ids.size, publisher_id]
-      recv_publisher_impl(name, label, room, parser, publisher_id, i)
+      recv_publisher_impl(name, label, room, parser, publisher_id, i, target_end_at)
       done_count += 1 if room.meta[META_DONE]?
     end
 
@@ -44,7 +49,7 @@ class Cmds::BatchCmd
     update_status msg, logger: "INFO", flush: true
   end
 
-  private def recv_publisher_impl(name, hint, house, parser, publisher_id, loop_counter)
+  private def recv_publisher_impl(name, hint, house, parser, publisher_id, loop_counter, target_end_at)
     @retry_attempts = 0       # reset retry
 
     # if done, nothing to do
@@ -70,7 +75,11 @@ class Cmds::BatchCmd
     if url = house.resume?
       logger.info "%s found suspended job" % [hint]
     else
-      url = url_builder(name, {"PUBLISHER_ID" => publisher_id.to_s}).call
+      params = {"PUBLISHER_ID" => publisher_id.to_s}
+      if /-d target_end_at=/.match(config.api_cmd?(name).to_s)
+        params["TARGET_EMD_AT"] = target_end_at.to_s
+      end
+      url = url_builder(name, params).call
       house.checkin(url)
       logger.debug "%s created new url: %s" % [hint, url]
     end
