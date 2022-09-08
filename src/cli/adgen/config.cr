@@ -32,7 +32,6 @@ class Adgen::Config < TOML::Config
   bool "batch/gc"
   bool "batch/pb_logging"
   i32s "batch/publisher_ids"
-  str  "batch/target_end_at"
 
   # clickhouse
   str "clickhouse/host"
@@ -44,6 +43,10 @@ class Adgen::Config < TOML::Config
 
   def api_cmd?(model) : String?
     self.str?("#{model}/cmd")
+  end
+  
+  def batch_target_end_at? : String?
+    self.str?("batch/target_end_at")
   end
 
   def skip_400?(model) : Bool
