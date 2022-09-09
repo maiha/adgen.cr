@@ -32,6 +32,7 @@ class Adgen::Config < TOML::Config
   bool "batch/gc"
   bool "batch/pb_logging"
   i32s "batch/publisher_ids"
+  str  "batch/target_end_at"
 
   # clickhouse
   str "clickhouse/host"
@@ -45,10 +46,6 @@ class Adgen::Config < TOML::Config
     self.str?("#{model}/cmd")
   end
   
-  def batch_target_end_at? : String?
-    self.str?("batch/target_end_at")
-  end
-
   def skip_400?(model) : Bool
     v = self["#{model}/skip_400"]?
     case v
@@ -216,10 +213,10 @@ level    = "=ERROR"
 colorize = true
 
 [native_pure_ad]
-cmd = "/api/v2/marketech/native_pure_ads -d publisher_id={PUBLISHER_ID} -d target_end_at={TARGET_EMD_AT}"
+cmd = "/api/v2/marketech/native_pure_ads -d publisher_id={PUBLISHER_ID} -d target_end_at={TARGET_END_AT}"
 
 [native_house_ad]
-cmd = "/api/v2/marketech/native_house_ads -d publisher_id={PUBLISHER_ID} -d target_end_at={TARGET_EMD_AT}"
+cmd = "/api/v2/marketech/native_house_ads -d publisher_id={PUBLISHER_ID} -d target_end_at={TARGET_END_AT}"
 skip_404 = true
 
 EOF

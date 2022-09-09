@@ -71,8 +71,8 @@ class Cmds::BatchCmd
       logger.info "%s found suspended job" % [hint]
     else
       params = {"PUBLISHER_ID" => publisher_id.to_s}
-      if batch_target_end_at = config.batch_target_end_at?
-        params["TARGET_EMD_AT"] = Pretty::Date.parse?(batch_target_end_at).to_s.split[0]
+      if config.api_cmd?(name).to_s.includes?("{TARGET_END_AT}")
+        params["TARGET_END_AT"] = Pretty::Date.parse(config.batch_target_end_at).to_s("%F")
       end
       url = url_builder(name, params).call
       house.checkin(url)
