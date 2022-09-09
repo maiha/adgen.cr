@@ -45,7 +45,7 @@ class Adgen::Config < TOML::Config
   def api_cmd?(model) : String?
     self.str?("#{model}/cmd")
   end
-  
+
   def skip_400?(model) : Bool
     v = self["#{model}/skip_400"]?
     case v

@@ -6,7 +6,7 @@ class Cmds::BatchCmd
   private def load_publisher_ids : Array(Int32)
     config.batch_publisher_ids
   end
-  
+
   private def recv_publisher(name, house, parser)
     hint = "[recv] #{name}"
     
