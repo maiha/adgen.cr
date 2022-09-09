@@ -70,7 +70,11 @@ class Cmds::BatchCmd
     if url = house.resume?
       logger.info "%s found suspended job" % [hint]
     else
-      url = url_builder(name, {"PUBLISHER_ID" => publisher_id.to_s}).call
+      params = {"PUBLISHER_ID" => publisher_id.to_s}
+      if config.api_cmd?(name).to_s.includes?("{TARGET_END_AT}")
+        params["TARGET_END_AT"] = Pretty::Date.parse(config.batch_target_end_at).to_s("%F")
+      end
+      url = url_builder(name, params).call
       house.checkin(url)
       logger.debug "%s created new url: %s" % [hint, url]
     end
