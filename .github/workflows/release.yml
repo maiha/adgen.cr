@@ -1,0 +1,33 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup dependencies
+        run: make setup
+
+      - name: Build adgen
+        run: make adgen
+
+      - name: Generate SHA256
+        run: sha256sum bin/adgen > SHA256SUMS
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            bin/adgen
+            SHA256SUMS
+          draft: false
+          prerelease: false
+          generate_release_notes: true
