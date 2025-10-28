@@ -2,11 +2,6 @@ SHELL=/bin/bash
 
 .SHELLFLAGS = -o pipefail -c
 
-all: adgen-dev
-
-######################################################################
-### compiling
-
 # for mounting permissions in docker compose
 export UID = $(shell id -u)
 export GID = $(shell id -g)
@@ -16,17 +11,29 @@ BUILD_TARGET=
 
 ON_ALPINE=docker compose run --rm alpine
 
-.PHONY: build
-build:
-	@$(ON_ALPINE) shards build $(COMPILE_FLAGS) --link-flags "-static" $(BUILD_TARGET) $(O)
+######################################################################
+### setup
 
-.PHONY: adgen-dev
-adgen-dev: BUILD_TARGET=adgen-dev
-adgen-dev: build
+.PHONY: setup
+setup: shard.lock
+
+shard.lock: shard.yml
+	$(ON_ALPINE) shards update -v
+
+######################################################################
+### compiling
+
+.PHONY: build
+build: setup
+	@$(ON_ALPINE) shards build $(COMPILE_FLAGS) --link-flags "-static" $(BUILD_TARGET) $(O)
 
 .PHONY: adgen
 adgen: BUILD_TARGET=--release adgen
 adgen: build
+
+.PHONY: adgen-dev
+adgen-dev: BUILD_TARGET=adgen-dev
+adgen-dev: build
 
 .PHONY: console
 console:
@@ -35,17 +42,14 @@ console:
 ######################################################################
 ### testing
 
-shard.lock: shard.yml
-	$(ON_ALPINE) shards update -v
-
 .PHONY: ci
-ci: shard.lock check_version_mismatch adgen test
+ci: setup check_version_mismatch adgen test
 
 .PHONY: test
 test: spec
 
 .PHONY: spec
-spec:
+spec: setup
 	@$(ON_ALPINE) crystal spec $(COMPILE_FLAGS) -v --fail-fast
 
 .PHONY: check_version_mismatch
@@ -53,7 +57,7 @@ check_version_mismatch: README.md shard.yml
 	diff -w -c <(grep version: $<) <(grep ^version: shard.yml)
 
 ######################################################################
-### generating
+### Generating
 
 GENERATOR  ?= bin/adgen-dev
 JSON_FILES ?= $(wildcard json/adgen/*.json)
