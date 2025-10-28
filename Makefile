@@ -7,14 +7,14 @@ all: adgen-dev
 ######################################################################
 ### compiling
 
-# for mounting permissions in docker-compose
+# for mounting permissions in docker compose
 export UID = $(shell id -u)
 export GID = $(shell id -g)
 
 COMPILE_FLAGS=-Dstatic
 BUILD_TARGET=
 
-ON_ALPINE=docker-compose run --rm alpine
+ON_ALPINE=docker compose run --rm alpine
 
 .PHONY: build
 build:
